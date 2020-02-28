@@ -1,0 +1,3 @@
+FROM traefik:v2.1
+
+COPY ./config/config.ext-rp.toml /etc/config.toml

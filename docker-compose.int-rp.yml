@@ -1,0 +1,29 @@
+version: '3.7'
+
+services:
+  int-reverse-proxy:
+    image: traefik:v2.1
+    command: --api.insecure=true --providers.docker
+
+    ports:
+      - published: 80
+        target: 80
+      - published: 81
+        target: 8080
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager
+      labels:
+        traefik.enable: "true"
+
+    networks:
+      - internal
+
+networks:
+  internal:
+    driver: overlay
+    external: true

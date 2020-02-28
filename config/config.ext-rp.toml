@@ -1,0 +1,29 @@
+[http]
+
+  [http.routers]
+    [http.routers.router0]
+      entryPoints = ["https"]
+      service = "reverse-proxy"
+      middlewares = ["auth"]
+      rule = "PathPrefix(`/`)"
+      priority = 2
+
+    [http.routers.router1]
+      entryPoints = ["https"]
+      service = "reverse-proxy"
+      rule = "PathPrefix(`/authservice/`) || Path(`/{service:(.+)service}/health`)"
+      priority = 10
+
+
+[http.middlewares]
+  [http.middlewares.auth.forwardAuth]
+    address = ""
+    trustForwardHeader = true
+    insecureSkipVerify = true
+    authResponseHeaders = ["X-Auth-User", "X-Secret"]
+
+[http.services]
+    [http.services.reverse-proxy]
+    [http.services.reverse-proxy.loadBalancer]
+        [[http.services.reverse-proxy.loadBalancer.servers]]
+        url = ""

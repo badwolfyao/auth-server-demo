@@ -1,0 +1,48 @@
+version: '3.7'
+
+services:
+  ext-reverse-proxy:
+    build:
+      context: .
+      dockerfile: Dockerfile-ext-rp
+    command:
+      --accesslog=true
+      --log.level=DEBUG
+      --api=true
+      --api.dashboard=true
+      --api.insecure=true
+      --entrypoints.http=true
+      --entrypoints.http.address=":80"
+      --providers.file=true
+      --providers.file.filename=/etc/config.toml
+
+    ports:
+      - published: 80
+        target: 80
+      - published: 81
+        target: 8080
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      # The source names are important, for now we will use these
+      # When we work on using LetsEncrypt to auto renew we may need to change
+      # - /etc/ssl/certs/star-concordsoftwareleasing-com.crt:/etc/ssl/certs/csl-cert.crt
+      # - /etc/ssl/private/star-concordsoftwareleasing-com.key:/etc/ssl/private/csl-priv.key
+
+      # - /etc/ssl/certs/star-concordservicing-net.crt:/etc/ssl/certs/csn-net-cert.crt
+      # - /etc/ssl/certs/letsencrypt-ca.crt:/etc/ssl/certs/csn-net-ca.crt
+      # - /etc/ssl/private/star-concordservicing-net.key:/etc/ssl/private/csn-net-priv.key
+
+    deploy:
+      placement:
+       constraints:
+         - node.role == manager
+    labels:
+      traefik.enable: "true"
+
+    networks:
+      - internal
+
+networks:
+  internal:
+    driver: overlay
+    external: true

@@ -1,0 +1,32 @@
+FROM mcr.microsoft.com/dotnet/core/sdk:3.1 AS build-env
+WORKDIR /app
+
+# Copy csproj and restore as distinct layers
+COPY ./src/AccountService/*.csproj ./
+RUN dotnet restore
+
+# Copy everything else and build
+COPY ./src/AccountService/ ./
+
+RUN dotnet publish -c Release -o out
+
+# Run Unit Tests
+# FROM mcr.microsoft.com/dotnet/core/sdk:3.1
+# WORKDIR /app
+
+# COPY ./src/* ./src/
+# COPY ./src/Dependencies/* ./src/Dependencies/
+# COPY ./tests/* ./tests/unittest/
+
+# RUN dotnet restore ./tests/unittest/PaymentServices.Tests.csproj
+
+# RUN dotnet test ./tests/unittest/PaymentServices.Tests.csproj
+
+# Build runtime image
+FROM mcr.microsoft.com/dotnet/core/aspnet:3.1
+WORKDIR /app
+COPY --from=build-env /app/out .
+
+
+
+ENTRYPOINT ["dotnet", "AccountService.dll"]
